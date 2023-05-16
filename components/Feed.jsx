@@ -96,7 +96,7 @@ const Feed = () => {
       {searchText ? (
         <PromptCardList data={searchedResults} handleTagClick={handleTagClick} />
       ) : (
-        <PromptCardList data={filteredPosts} handleTagClick={handleTagClick} />
+        <PromptCardList data={posts} handleTagClick={handleTagClick} />
       )}
     </section>
   );
