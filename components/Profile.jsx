@@ -44,6 +44,21 @@ const Profile = ({ name, desc, data, handleEdit, handleDelete }) => {
 					/>
 				))}
 			</div>
+
+			<div className="mt-10 prompt_layout">
+				{favoritePrompts.map((post) => (
+					<PromptCard 
+						key={post._id}
+						post={post.prompt}
+						isFavourite={true}
+						handleEdit={() => handleEdit && handleEdit(post)}
+						handleDelete={() => handleDelete && handleDelete(post)}
+					/>
+				))}
+			</div>
+
+			
+			
     	</section>
   	)
 }
