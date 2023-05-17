@@ -1,5 +1,7 @@
 # PromptCraft
 
+![PromptCraft - Web App](/PromptCraft_Splash.png)
+
 [https://prompt-craft.vercel.app/](https://prompt-craft.vercel.app/)
 
 The AI Prompt App is a web application built with Next.js that allows users to sign in using their Google account and create helpful prompts for AI. Users can also search for and discover prompts shared by other users.
