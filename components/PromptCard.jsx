@@ -11,66 +11,84 @@ import FileCopyIcon from '@mui/icons-material/FileCopy';
 import FileDownloadDoneIcon from '@mui/icons-material/FileDownloadDone';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { Alert } from '@mui/material';
 
 const PromptCard = ({ post, handleTagClick, handleEdit, handleDelete }) => {
 	const { data: session } = useSession();
 	const pathName = usePathname();
 	const router = useRouter();
-
+  
 	const { addFavoritePrompt, removeFavoritePrompt, isPromptFavorite } =
-    useContext(FavoriteContext);
-
+	  useContext(FavoriteContext);
+  
 	const [copied, setCopied] = useState("");
+	const [showSavedPrompt, setShowSavedPrompt] = useState(false);
+	const [showUnsavedPrompt, setShowUnsavedPrompt] = useState(false);
+  
 	const isFavorite = isPromptFavorite(post._id);
-
+  
 	const handleProfileClick = () => {
-		if (post.creator._id === session?.user.id) return router.push("/profile");
-
-		router.push(`/profile/${post.creator._id}?name=${post.creator.username}`);
+	  if (post.creator._id === session?.user.id) return router.push("/profile");
+  
+	  router.push(`/profile/${post.creator._id}?name=${post.creator.username}`);
 	};
-
+  
 	const handleCopy = () => {
-		setCopied(post.prompt);
-		navigator.clipboard.writeText(post.prompt);
-		setTimeout(() => setCopied(false), 3000);
-	}
-
+	  setCopied(post.prompt);
+	  navigator.clipboard.writeText(post.prompt);
+	  setTimeout(() => setCopied(false), 3000);
+	};
+  
 	const handleFavouriteToggle = async () => {
-		if (isFavorite) {
-			removeFavoritePrompt(post._id);
+	  if (isFavorite) {
+		removeFavoritePrompt(post._id);
+		setShowUnsavedPrompt(true);
+		setTimeout(() => setShowUnsavedPrompt(false), 1500);
+	  } else {
+		addFavoritePrompt(post);
+		setShowSavedPrompt(true);
+		setTimeout(() => setShowSavedPrompt(false), 1500);
+	  }
+  
+	  try {
+		const session = await getSession();
+  
+		if (!session?.user?.id) {
+		  console.log('User is not authenticated.');
+		  return;
+		}
+  
+		const response = await fetch("/api/favourite/toggle-favourite", {
+		  method: "POST",
+		  body: JSON.stringify({ userId: session.user.id, promptId: post._id }),
+		  headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${session.accessToken}`,
+		  },
+		});
+  
+		if (response.ok) {
+		  // Handle success response if needed
 		} else {
-			addFavoritePrompt(post);
+		  console.log("Failed to toggle favorite prompt");
 		}
-
-		try {
-		  const session = await getSession();
-	  
-		  if (!session?.user?.id) {
-			console.log('User is not authenticated.');
-			return;
-		  }
-	  
-		  const response = await fetch("/api/favourite/toggle-favourite", {
-			method: "POST",
-			body: JSON.stringify({ userId: session.user.id, promptId: post._id }),
-			headers: {
-			  "Content-Type": "application/json",
-			  Authorization: `Bearer ${session.accessToken}`,
-			},
-		  });
-	  
-		  if (response.ok) {
-			setIsFavourite(!isFavourite);
-		  } else {
-			console.log("Failed to toggle favourite prompt");
-		  }
-		} catch (error) {
-		  console.log("Failed to toggle favourite prompt", error);
-		}
-	  };  
+	  } catch (error) {
+		console.log("Failed to toggle favorite prompt", error);
+	  }
+	}; 
 	  
   	return (
     	<div className="prompt_card">
+		{showSavedPrompt && (
+        <Alert severity="success" onClose={() => setShowSavedPrompt(false)}>
+          Prompt saved as favorite!
+        </Alert>
+      )}
+      {showUnsavedPrompt && (
+        <Alert severity="info" onClose={() => setShowUnsavedPrompt(false)}>
+          Prompt removed from favorites.
+        </Alert>
+      )}
 			<div className="flex justify-between items-start gap-5">
 				<div className='flex-1 flex justify-start items-center gap-3 cursor-pointer'
 				onClick={handleProfileClick}>
